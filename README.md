@@ -465,12 +465,14 @@ claude --model claude-sonnet-4-6
 └──────────────────────────────────────────────────┘
 ```
 
-The server (`proxy/server.py`) is **one file, ~1000 lines**. It does four things:
+The server (`proxy/server.py`) is **one file, ~1000 lines**. It does six things:
 
-1. 📦 **Loads the model** — Apple's MLX framework, native Metal GPU, unified memory
+1. 📦 **Loads the model** — Apple's MLX framework, native Metal GPU, unified memory. Handles Gemma's `RotatingKVCache` quirk automatically so sliding-window models don't crash on the first request.
 2. 🔌 **Speaks Anthropic API** — Claude Code thinks it's talking to Anthropic's cloud. It's not.
-3. 🔧 **Translates tool use** — Converts Anthropic tool definitions ↔ HuggingFace `<tool_call>` format, parses tool calls back into Anthropic `tool_use` blocks
-4. 🧹 **Cleans the output** — Local models think out loud in `<think>` tags. We strip those.
+3. 🔧 **Translates tool use** — Three different tool-call formats in and out: Gemma 4 native (`<|tool_call>call:Name{...}<tool_call|>`), Llama 3.3 raw JSON (`{"type":"function",...}`), and HuggingFace `<tool_call>` JSON (Qwen and others). All converted ↔ Anthropic `tool_use` blocks, with garbled-output recovery for small models.
+4. 🧹 **Cleans the output** — Local models think out loud in `<think>` / `<|channel>thought` tags, emit stop markers (`<turn|>`, `<|python_tag|>`), and sometimes drop in reasoning preamble. We strip all of it before sending back to Claude Code.
+5. ⚡ **Reuses prompt caches across requests** — so Claude Code's 4K-token system prompt doesn't get re-prefilled on every turn. Huge speedup for short questions.
+6. 🎯 **Code mode** — auto-detects Claude Code coding sessions (any of Bash/Read/Edit/Write/Grep/Glob in the tools list) and swaps Claude Code's ~10K-token harness prompt for a slim ~100-token one tuned for local models. Cuts prompt tokens by 99% and stops models from refusing with "I am not able to execute this task."
 
 ---
 
@@ -566,14 +568,16 @@ The persona file (`NarrativeGemma/CLAUDE.md`) is loaded as a system prompt at la
  │   ├── Gemma 4 Code.command    ← 🟢 THE QUICK ONE
  │   ├── Llama 70B.command       ← 🟠 THE WISE ONE
  │   ├── Browser Agent.command   ← 🌐 Autonomous Brave browser control
- │   └── Narrative Gemma.command ← 🎭 Auto-narration mode
+ │   ├── Narrative Gemma.command ← 🎭 Auto-narration mode
+ │   └── lib/claude-local-common.sh ← Shared: model-aware restart, local-cache resolver, health-wait
  ├── 🎭 NarrativeGemma/
  │   └── CLAUDE.md              ← Narration persona (sanitized, generic, opt-in)
  ├── 🛠️  scripts/
  │   ├── download-and-import.sh ← Download a fighter (`gemma` / `llama` / `qwen`)
  │   ├── persistent-download.sh ← Auto-retry downloader for big models
  │   ├── start-mlx-server.sh    ← Server start helper
- │   └── test_mlx_server.py     ← Tool-call reliability test suite
+ │   ├── test_mlx_server.py     ← Tool-call reliability test suite
+ │   └── upload-mlx-quant.sh    ← Publish your own MLX-quantized uploads to HF
  ├── 📊 docs/
  │   ├── BENCHMARKS.md          ← Detailed speed comparisons
  │   └── TWITTER-THREAD.md      ← Social media content

